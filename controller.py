@@ -28,6 +28,7 @@ class Controller(interfaces.Component, interfaces.Runnable):
         self.timestamp_history = deque(maxlen=100)
         self.power_history = deque(maxlen=100)
         self.temp_history = deque(maxlen=100)
+        self.gravity_history = deque(maxlen=100)
         self.setpoint_history = deque(maxlen=100)
         sockjs.add_endpoint(app, prefix='/controllers/%s/ws'%self.name, name='%s-ws'%self.name, handler=self.websocket_handler)
         asyncio.ensure_future(self.run())
@@ -99,6 +100,8 @@ class Controller(interfaces.Component, interfaces.Runnable):
             'enabled': self.enabled,
             'wsUrl': '/controllers/%s/ws'%self.name
         }
+        if ('gravity' in dir (self.sensor)):
+            details['gravity'] = self.sensor.gravity ()
         return details
 
     async def run(self):
@@ -115,6 +118,8 @@ class Controller(interfaces.Component, interfaces.Runnable):
             self.power_history.append(output)
             self.temp_history.append(self.sensor.temp())
             self.setpoint_history.append(self.targetTemp)
+            if ('gravity' in dir (self.sensor)):
+                self.gravity_history.append (self.sensor.gravity ())
             await asyncio.sleep(10)
 
 
@@ -152,6 +157,8 @@ async def dataHistory(request):
             'power': list(controller.power_history),
             'setpoint': list(controller.setpoint_history)
             }
+        if ('gravity' in dir (self.sensor)):
+            data['gravity'] = list (controller.gravity_history)
         return web.json_response(data)
     except KeyError as e:
         raise web.HTTPNotFound(reason='Unknown controller %s'%str(e))

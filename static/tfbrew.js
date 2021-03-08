@@ -5,7 +5,8 @@ var chartColors = {
 	green: 'rgb(75, 192, 192)',
 	blue: 'rgb(54, 162, 235)',
 	purple: 'rgb(153, 102, 255)',
-	grey: 'rgb(201, 203, 207)'
+        grey: 'rgb(201, 203, 207)',
+        white: 'rgb(255,255,255)'
 };
 
 var plotComp = {
@@ -25,6 +26,8 @@ var plotComp = {
             this.chart.data.datasets[0].data.push(datapoint.temperature)
             this.chart.data.datasets[1].data.push(datapoint.power)
             this.chart.data.datasets[2].data.push(datapoint.setpoint)
+            if (datapoint.gravity != undefined)
+                this.chart.data.datasets[3].data.push(datapoint.gravity)
             this.chart.update()
         }
     },
@@ -57,7 +60,16 @@ var plotComp = {
 					borderColor: chartColors.blue,
                     data: [],
                     yAxisID: 'temperature-axis'
+                },
+                {
+                    label: 'Gravity',
+                    fill: true,
+                    backgroundColor: chartColors.yellow,
+	            borderColor: chartColors.white,
+                    data: [],
+                    yAxisID: 'gravity-axis'
                 }
+
                 ]
             },
             options: {
@@ -93,7 +105,16 @@ var plotComp = {
                             },
                             position: 'right',
                             id: 'power-axis'
-                    }]
+                        },
+                        {
+                            beginAtZero:false,
+                            ticks: {
+                                suggestedMin: 1,
+                                suggestedMax: 1.120
+                            },
+                            position: 'right',
+                            id: 'gravity-axis'
+                        }]
                 }
             }
         });  
@@ -104,6 +125,8 @@ var plotComp = {
             json.temperature.forEach(x=>this.chart.data.datasets[0].data.push(x))
             json.power.forEach(x=>this.chart.data.datasets[1].data.push(x))
             json.setpoint.forEach(x=>this.chart.data.datasets[2].data.push(x))
+            if (json.gravity != undefined)
+                json.gravity.forEach(x=>this.chart.data.datasets[3].data.push(x))
             this.chart.update()      
         })
     }
@@ -166,7 +189,10 @@ Vue.component('brewcontroller', {
                 return this.controllerState.power.toFixed(0)
             }
         },
-
+        formattedGravity: function() {
+            if ('gravity' in this.controllerState)
+                return this.controllerState.gravity.toFixed(3)
+        },
         enabledStr: function() {
             return this.controllerState.enabled?"Enabled":"Disabled"
         },
@@ -192,9 +218,11 @@ Vue.component('brewcontroller', {
                     this.controllerState[key] = msg.data[key];
                 }
                 var datapoint = {'when': moment(), 
-                                'temperature': this.controllerState.temperature, 
-                                'power': this.controllerState.power, 
-                                setpoint: this.controllerState.setpoint}
+                                 'temperature': this.controllerState.temperature,
+                                 'power': this.controllerState.power, 
+                                 setpoint: this.controllerState.setpoint}
+                if ('gravity' in this.controllerState)
+                    datapoint['gravity'] = this.controllerState.gravity
                 this.$refs.chart.newData(datapoint)
             };
             this.ws.onclose = (e) => {

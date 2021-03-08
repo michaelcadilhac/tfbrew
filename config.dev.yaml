@@ -1,0 +1,53 @@
+consoleLoglevel: WARNING
+port: 8080
+enableWebUI: true
+
+sensors:
+  - RecircTemp:
+     plugin: DummySensor 
+     fakeTemp: 66
+#  - RecircTemp:
+#      plugin: W1Sensor 
+#      id: 28-000004b8240b
+#      offset: 1.2
+
+actors:
+  - Heater:
+     plugin: DummyActor
+  - Pump:
+      plugin: DummyActor
+#  - Pump:
+#       plugin: GPIOActor
+#       gpio: 17
+#   - Heater:
+#       plugin: GPIOActor
+#       gpio: 18
+#       pwmFrequency: 2
+
+controllers:
+  - KettleController:
+      plugin: PIDLogic
+      logicCoeffs:
+        p: 50
+        i: 2
+        d: 10 
+      actor: Heater
+      sensor: RecircTemp
+      initialSetpoint: 67
+
+extensions:
+   - web:
+       plugin: SimpleWebView
+       endpoints:
+        - enable
+        - setpoint
+        - pump
+
+connections:
+  - web.enable=>KettleController.state
+  - Heater.power=>web.heaterpower
+  - RecircTemp.temperature=>web.recirtemp
+  - web.setpoint=>KettleController.setpoint
+  - KettleController.setpoint=>web.setpoint
+  - web.pump=>Pump.state
+

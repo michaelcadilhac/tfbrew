@@ -33,6 +33,9 @@ class DummySensor(Sensor):
     def temp(self):
         return self.lastTemp
 
+    def gravity(self):
+        return 1.082
+
     def callback(self, endpoint, data):
         if endpoint == 'temperature':
             self.fakeTemp = float(data)
