@@ -60,16 +60,7 @@ var plotComp = {
 					borderColor: chartColors.blue,
                     data: [],
                     yAxisID: 'temperature-axis'
-                },
-                {
-                    label: 'Gravity',
-                    fill: true,
-                    backgroundColor: chartColors.yellow,
-	            borderColor: chartColors.white,
-                    data: [],
-                    yAxisID: 'gravity-axis'
                 }
-
                 ]
             },
             options: {
@@ -125,8 +116,17 @@ var plotComp = {
             json.temperature.forEach(x=>this.chart.data.datasets[0].data.push(x))
             json.power.forEach(x=>this.chart.data.datasets[1].data.push(x))
             json.setpoint.forEach(x=>this.chart.data.datasets[2].data.push(x))
-            if (json.gravity != undefined)
+            if (json.gravity != undefined) {
+                this.chart.data.datasets.push({
+                    label: 'Gravity',
+                    fill: true,
+                    backgroundColor: chartColors.yellow,
+	            borderColor: chartColors.white,
+                    data: [],
+                    yAxisID: 'gravity-axis'
+                })
                 json.gravity.forEach(x=>this.chart.data.datasets[3].data.push(x))
+            }
             this.chart.update()      
         })
     }

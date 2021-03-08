@@ -157,7 +157,7 @@ async def dataHistory(request):
             'power': list(controller.power_history),
             'setpoint': list(controller.setpoint_history)
             }
-        if ('gravity' in dir (self.sensor)):
+        if ('gravity' in dir (controller.sensor)):
             data['gravity'] = list (controller.gravity_history)
         return web.json_response(data)
     except KeyError as e:
