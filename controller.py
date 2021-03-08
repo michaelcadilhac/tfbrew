@@ -130,7 +130,16 @@ class Controller(interfaces.Component, interfaces.Runnable):
                     output = self.logic.calc(self.sensor.temp(), self.targetTemp)
                 self.actor.updatePower(output)
             self.broadcastDetails()
-            if len (self.timestamp_history) == HISTORY_SIZE:
+
+            self.timestamp_history.append(time())
+            self.power_history.append(output)
+            self.temp_history.append(self.sensor.temp())
+            self.setpoint_history.append(self.targetTemp)
+
+            if ('gravity' in dir (self.sensor)):
+                self.gravity_history.append (self.sensor.gravity ())
+
+            if len (self.timestamp_history) == HISTORY_SIZE + 1:
                 i = self.mostredundanttime (self.timestamp_history)
                 assert i > 0 and i < HISTORY_SIZE
                 del self.timestamp_history[i]
@@ -140,13 +149,6 @@ class Controller(interfaces.Component, interfaces.Runnable):
                 if ('gravity' in dir (self.sensor)):
                     del self.gravity_history[i]
 
-            self.timestamp_history.append(time())
-            self.power_history.append(output)
-            self.temp_history.append(self.sensor.temp())
-            self.setpoint_history.append(self.targetTemp)
-
-            if ('gravity' in dir (self.sensor)):
-                self.gravity_history.append (self.sensor.gravity ())
             await asyncio.sleep(10)
 
 
