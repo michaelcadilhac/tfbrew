@@ -35,7 +35,7 @@ controllers:
         allowedUndershoot: 0.3
         keepCold: yes
       actor:  Compressor
-      sensor: Tilt
+      sensor: FridgeTemp
       #FridgeTemp
       initialSetpoint: 4
       initialState: on
@@ -44,7 +44,7 @@ controllers:
       plugin: HysteresisLogic
       logicCoeffs:
         allowedOvershoot: 0.5
-        allowedUndershoot: 0.3
+        allowedUndershoot: 0.0
         keepCold: yes
       actor:  Pump
       sensor: Tilt

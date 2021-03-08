@@ -23,7 +23,7 @@ print("Using config from %s"%configFile)
     
 config = yaml.load(open(configFile,mode='r'))
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(name)s:%(message)s', filename='tfbrew.log', filemode='w')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(name)s:%(message)s', filename='tfbrew.log', filemode='w+')
 logger = logging.getLogger(__name__)
 
 console = logging.StreamHandler()
