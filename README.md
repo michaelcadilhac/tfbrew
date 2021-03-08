@@ -69,4 +69,9 @@ pip install -r requirements.txt
 
 then run the tfbrew.py file
 
+Python may require net admin rights to use the Tilt:
+```
+sudo setcap 'cap_net_raw,cap_net_admin+eip' "$(readlink -f "$(which python3)")"
+```
+
 Please consult the [Wiki](https://github.com/hrafnkelle/tfbrew/wiki) for further information.

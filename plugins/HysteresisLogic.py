@@ -6,8 +6,10 @@ def factory(name, settings):
     keepHot = not settings.get('keepCold', True)
     keepHot = settings.get('keepHot', keepHot)
     if keepHot:
+        print ("Keeping %s hot"%name)
         return HysteresisHeatingLogic(hysteresisOver, hysteresisUnder)
     else:
+        print ("Keeping %s cold"%name)
         return HysteresisCoolingLogic(hysteresisOver, hysteresisUnder)
 
 
@@ -23,7 +25,7 @@ class HysteresisCoolingLogic(interfaces.Logic):
             threshold = threshold - self.hysteresisUnder
         else:
             threshold = threshold + self.hysteresisOver
-
+        print ("CurrentTemp: %d; checking if >= %d"%(currentTemp, threshold))
         if currentTemp >= threshold:
             return 1
         else:

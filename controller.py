@@ -105,6 +105,7 @@ class Controller(interfaces.Component, interfaces.Runnable):
         await asyncio.sleep(5)
         while True:
             output = self.actor.getPower()
+            print ("Enabled: %d, auto: %d"%(self.enabled, self._autoMode))
             if self.enabled:
                 if self._autoMode:
                     output = self.logic.calc(self.sensor.temp(), self.targetTemp)
