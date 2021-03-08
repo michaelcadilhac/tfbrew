@@ -25,7 +25,7 @@ class HysteresisCoolingLogic(interfaces.Logic):
             threshold = threshold - self.hysteresisUnder
         else:
             threshold = threshold + self.hysteresisOver
-        print ("CurrentTemp: %d; checking if >= %d"%(currentTemp, threshold))
+        print ("CurrentTemp: %f; checking if >= %f"%(currentTemp, threshold))
         if currentTemp >= threshold:
             return 1
         else:

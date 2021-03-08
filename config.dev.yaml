@@ -6,6 +6,10 @@ sensors:
   - RecircTemp:
      plugin: DummySensor 
      fakeTemp: 66
+  - MyW1:
+     plugin: W1Sensor
+     id: noid 
+          
 #  - RecircTemp:
 #      plugin: W1Sensor 
 #      id: 28-000004b8240b

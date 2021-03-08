@@ -1,6 +1,7 @@
 import logging
 import aiofiles
 import asyncio
+from async_timeout import timeout
 from interfaces import Sensor
 from event import notify, Event
 
@@ -32,7 +33,8 @@ class W1Sensor(Sensor):
             await asyncio.sleep(self.pollInterval)
 
     async def readTemp(self):
-        async with aiofiles.open('/sys/bus/w1/devices/%s/w1_slave'% self.sensorId, mode='r') as sensor_file:
+        contents = ""
+        async with timeout (2), aiofiles.open('/sys/bus/w1/devices/%s/w1_slave'% self.sensorId, mode='r') as sensor_file:
             contents = await sensor_file.read()
         if contents.split('\n')[0].split(' ')[11] == "YES":
             temp = float(contents.split("=")[-1]) / 1000
