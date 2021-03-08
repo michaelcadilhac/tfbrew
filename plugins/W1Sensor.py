@@ -33,14 +33,12 @@ class W1Sensor(Sensor):
             await asyncio.sleep(self.pollInterval)
 
     async def readTemp(self):
-        contents = ""
-        async with timeout (2), aiofiles.open('/sys/bus/w1/devices/%s/w1_slave'% self.sensorId, mode='r') as sensor_file:
+        async with aiofiles.open('/sys/bus/w1/devices/%s/w1_slave'% self.sensorId, mode='r') as sensor_file:
             contents = await sensor_file.read()
-        if contents.split('\n')[0].split(' ')[11] == "YES":
-            temp = float(contents.split("=")[-1]) / 1000
-            return temp
-        else:
+        match = re.search('YES\n.*=(.*)$', contents)
+        if match is None:
             raise RuntimeError("Failed to read W1 Temperature: %s"%contents)
+        return float(match.group(1)) / 1000
 
     def temp(self):
         return self.lastTemp
