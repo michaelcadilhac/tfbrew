@@ -11,6 +11,7 @@ import interfaces
 import event
 from common import app, components
 
+HISTORY_SIZE = 300
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +26,13 @@ class Controller(interfaces.Component, interfaces.Runnable):
         self.agitator = agitator
         self.targetTemp = targetTemp
         self.logic = logic
-        self.timestamp_history = deque(maxlen=100)
-        self.power_history = deque(maxlen=100)
-        self.temp_history = deque(maxlen=100)
-        self.gravity_history = deque(maxlen=100)
-        self.setpoint_history = deque(maxlen=100)
+
+        self.timestamp_history = list ()
+        self.power_history = list ()
+        self.temp_history = list ()
+        self.gravity_history =  list ()
+        self.setpoint_history = list ()
+
         sockjs.add_endpoint(app, prefix='/controllers/%s/ws'%self.name, name='%s-ws'%self.name, handler=self.websocket_handler)
         asyncio.ensure_future(self.run())
 
@@ -104,6 +107,19 @@ class Controller(interfaces.Component, interfaces.Runnable):
             details['gravity'] = self.sensor.gravity ()
         return details
 
+    ## This returns the position i such that (ar[i] - ar[i-1]) + (ar[i+1] -
+    ## ar[i]) is minimal.
+    @staticmethod
+    def mostredundanttime (ar):
+        mint = float ('inf')
+        minpos = -1
+        for i in range (1, len (ar) - 1):
+            delta = ar[i + 1] - ar[i - 1]
+            if delta < mint:
+                mint = delta
+                minpos = i
+        return minpos
+
     async def run(self):
         await asyncio.sleep(5)
         while True:
@@ -114,10 +130,21 @@ class Controller(interfaces.Component, interfaces.Runnable):
                     output = self.logic.calc(self.sensor.temp(), self.targetTemp)
                 self.actor.updatePower(output)
             self.broadcastDetails()
+            if len (self.timestamp_history) == HISTORY_SIZE:
+                i = self.mostredundanttime (self.timestamp_history)
+                assert i > 0 and i < HISTORY_SIZE
+                del self.timestamp_history[i]
+                del self.power_history[i]
+                del self.temp_history[i]
+                del self.setpoint_history[i]
+                if ('gravity' in dir (self.sensor)):
+                    del self.gravity_history[i]
+
             self.timestamp_history.append(time())
             self.power_history.append(output)
             self.temp_history.append(self.sensor.temp())
             self.setpoint_history.append(self.targetTemp)
+
             if ('gravity' in dir (self.sensor)):
                 self.gravity_history.append (self.sensor.gravity ())
             await asyncio.sleep(10)
