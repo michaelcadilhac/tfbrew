@@ -1,7 +1,7 @@
 import logging
 import aiofiles
 import asyncio
-from async_timeout import timeout
+import re
 from interfaces import Sensor
 from event import notify, Event
 
