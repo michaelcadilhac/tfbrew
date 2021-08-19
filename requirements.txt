@@ -1,8 +1,7 @@
 aiofiles
 aiohttp
 ruamel.yaml
-rpi.gpio
 pybluez
 spidev
 sockjs
-async_timeout
+

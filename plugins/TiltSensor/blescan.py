@@ -104,6 +104,7 @@ def parse_events(sock, loop_count=100):
 
         if event == LE_META_EVENT:
             subevent, = struct.unpack('B', pkt[3:4])
+            rawpkt = pkt
             pkt = pkt[4:]
             if subevent == EVT_LE_CONN_COMPLETE:
                 le_handle_connection_complete(pkt)
@@ -112,6 +113,7 @@ def parse_events(sock, loop_count=100):
                 report_pkt_offset = 0
                 for i in range(0, num_reports):
                     beacons.append({
+                        'mac': packed_bdaddr_to_string(rawpkt[7:13]),
                         'uuid': returnstringpacket(pkt[report_pkt_offset - 22: report_pkt_offset - 6]),
                         'minor': returnnumberpacket(pkt[report_pkt_offset - 4: report_pkt_offset - 2]),
                         'major': returnnumberpacket(pkt[report_pkt_offset - 6: report_pkt_offset - 4])

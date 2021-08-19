@@ -9,6 +9,10 @@ var chartColors = {
         white: 'rgb(255,255,255)'
 };
 
+function celsius_to_fahrenheit (temp) {
+  return temp * 9./5. + 32.
+}
+
 var plotComp = {
     template: `
     <canvas ref="plot" width="400" height="400"></canvas>
@@ -23,7 +27,7 @@ var plotComp = {
     methods: {
         newData: function(datapoint) {
             this.chart.data.labels.push(moment(datapoint.when))
-            this.chart.data.datasets[0].data.push(datapoint.temperature)
+            this.chart.data.datasets[0].data.push(celsius_to_fahrenheit (datapoint.temperature))
             this.chart.data.datasets[1].data.push(datapoint.power)
             this.chart.data.datasets[2].data.push(datapoint.setpoint)
             if (datapoint.gravity != undefined)
@@ -113,7 +117,7 @@ var plotComp = {
         .then(response=>response.json())
         .then(json =>{
             json.label.forEach(x=>this.chart.data.labels.push(Math.floor(1000*x)))
-            json.temperature.forEach(x=>this.chart.data.datasets[0].data.push(x))
+            json.temperature.forEach(x=>this.chart.data.datasets[0].data.push(celsius_to_fahrenheit(x)))
             json.power.forEach(x=>this.chart.data.datasets[1].data.push(x))
             json.setpoint.forEach(x=>this.chart.data.datasets[2].data.push(x))
             if (json.gravity != undefined) {
@@ -182,7 +186,7 @@ Vue.component('brewcontroller', {
     computed: {
         formattedTemperature: function() {
             if ('temperature' in this.controllerState)
-                return this.controllerState.temperature.toFixed(2)+'\u00B0C'
+                return celsius_to_fahrenheit (this.controllerState.temperature).toFixed(2)+'\u00B0C'
         },
         formattedPower: function() {
             if ('power' in this.controllerState) {

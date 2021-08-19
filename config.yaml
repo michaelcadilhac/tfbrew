@@ -3,20 +3,14 @@ port: 8080
 enableWebUI: true
 
 sensors:
-  - FridgeTemp:
-      plugin: W1Sensor 
-      id: 28-0120223e13cf
-      offset: 0
   - Tilt:
       plugin: TiltSensor
+      mac: 'e6:6f:d2:76:43:8d'
+      uuid: 'a495bb10c5b14b44b5121370f02d74de'
 
 actors:
-  - Compressor:
-      plugin: USBRelayActor
-      id: "0_1"
-
   - Pump:
-      plugin: USBRelayActor
+      plugin: DummyActor
       id: "0_2"
 
 #  - Pump:
@@ -28,18 +22,6 @@ actors:
 #       pwmFrequency: 2
 
 controllers:
-  - FridgeController:
-      plugin: HysteresisLogic
-      logicCoeffs:
-        allowedOvershoot: 0.5
-        allowedUndershoot: 0.3
-        keepCold: yes
-      actor:  Compressor
-      sensor: FridgeTemp
-      #FridgeTemp
-      initialSetpoint: 4
-      initialState: on
-      
   - FermController:
       plugin: HysteresisLogic
       logicCoeffs:
@@ -48,7 +30,7 @@ controllers:
         keepCold: yes
       actor:  Pump
       sensor: Tilt
-      initialSetpoint: 18
+      initialSetpoint: 20
       initialState: on
       
 extensions:
@@ -60,10 +42,7 @@ extensions:
         - pump
 
 connections:
-  - web.enable=>FridgeController.state
   - web.enable=>FermController.state
-  - Compressor.power=>web.compressorpower
-  - FridgeTemp.temperature=>web.fridgetemp
   - FermTemp.temperature=>web.fermtemp
   - Tilt.temperature=>web.tilttemp
   - web.setpoint=>FermController.setpoint

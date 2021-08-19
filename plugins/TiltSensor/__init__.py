@@ -14,7 +14,7 @@ from event import notify, Event
 logger = logging.getLogger(__name__)
 
 def factory(name, settings):
-   return TiltSensor(name)
+   return TiltSensor(name, settings['mac'], settings['uuid'])
 
 
 TILTS = {
@@ -47,18 +47,20 @@ def to_brix(sg):
     return brix
 
 class TiltSensor(interfaces.Sensor):
-    def __init__(self, name):
+    def __init__(self, name, mac, uuid):
        self.name = name
+       self.uuid = uuid
+       self.mac = mac
        self.dev_id = 0
        self.lastTemp = 0.0
        self.lastGravity = 1.0
-       try:
+       if True:
            self.sock = bluez.hci_open_dev(self.dev_id)
            logger.info('Starting pytilt logger')
            blescan.hci_le_set_scan_parameters(self.sock)
            blescan.hci_enable_le_scan(self.sock)
-       except:
-           logger.error('error accessing bluetooth device...')
+       #except:
+       #    logger.error('error accessing bluetooth device...')
 
        asyncio.get_event_loop().create_task(self.run())
 
@@ -74,16 +76,23 @@ class TiltSensor(interfaces.Sensor):
     def monitor_tilt(self):
         while True:
             beacons = distinct(blescan.parse_events(self.sock, 10))
+            temp = 0
+            grav = 0
             for beacon in beacons:
-                if beacon['uuid'] in TILTS.keys():
+                if beacon['uuid'] == self.uuid and beacon['mac'] == self.mac:
+                    temp = to_celsius(beacon['major'])
+                    grav = beacon['minor']
 #                     print({
 #                         'color': TILTS[beacon['uuid']],
 #                         'timestamp': datetime.datetime.now().isoformat(),
 #                         'temp': to_celsius(beacon['major']),
 #                         'gravity': beacon['minor']
 #                     })
-                    return (to_celsius(beacon['major']), beacon['minor'])
-#           logger.debug("Nothing found from bluetooth")
+            if grav == 0:
+                logger.debug("Nothing found from bluetooth")
+            else:
+                return (temp, grav)
+
     
     def temp(self):
        return self.lastTemp
