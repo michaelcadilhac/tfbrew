@@ -1,54 +1,63 @@
 consoleLoglevel: WARNING
-port: 8080
+port: 8081
 enableWebUI: true
 
 sensors:
-  - FridgeTemp:
-      plugin: W1Sensor 
+  - HotWaterTemp:
+      plugin: DummySensor
+      fakeTemp: 65
+      aplugin: W1Sensor 
       id: 28-0120223e13cf
       offset: 0
-  - Tilt:
-      plugin: TiltSensor
+  - MashTemp1:
+      plugin: DummySensor
+      fakeTemp: 69
+      aplugin: W1Sensor
+      id: 28-0120223e13cf
+      offset: 0
+  - MashTemp2:
+      plugin: DummySensor
+      fakeTemp: 67
+      aplugin: W1Sensor
+      id: 28-0120223e13cf
+      offset: 0
+  - MashTemp:
+      plugin: TempAvgSensor
+      sensors:
+        - MashTemp1
+        - MashTemp2
 
 actors:
-  - Compressor:
-      plugin: USBRelayActor
-      id: "0_1"
-
   - Pump:
-      plugin: USBRelayActor
-      id: "0_2"
-
-#  - Pump:
-#       plugin: GPIOActor
-#       gpio: 17
-#   - Heater:
-#       plugin: GPIOActor
-#       gpio: 18
-#       pwmFrequency: 2
+      plugin: DummyActor
+      aplugin: GPIOActor
+      gpio: 17
+  - Heater:
+      plugin: DummyActor
+      aplugin: GPIOActor
+      gpio: 18
 
 controllers:
-  - FridgeController:
+  - HotWaterController:
       plugin: HysteresisLogic
       logicCoeffs:
         allowedOvershoot: 0.5
         allowedUndershoot: 0.3
-        keepCold: yes
-      actor:  Compressor
-      sensor: FridgeTemp
-      #FridgeTemp
-      initialSetpoint: 4
+        keepHot: yes
+      actor:  Heater
+      sensor: HotWaterTemp
+      initialSetpoint: 74
       initialState: on
       
-  - FermController:
+  - MashController:
       plugin: HysteresisLogic
       logicCoeffs:
         allowedOvershoot: 0.5
-        allowedUndershoot: 0.0
-        keepCold: yes
+        allowedUndershoot: 0.3
+        keepHot: yes
       actor:  Pump
-      sensor: Tilt
-      initialSetpoint: 18
+      sensor: MashTemp
+      initialSetpoint: 64
       initialState: on
       
 extensions:
@@ -56,17 +65,30 @@ extensions:
        plugin: SimpleWebView
        endpoints:
         - enable
-        - setpoint
-        - pump
+        - sethotwaterpoint
+        - setmashpoint
+   - blynk:
+      plugin: BlynkLib
+      server: localhost
+      port: 8080
+      token: Ng4gnB2tPyuPlstsIQ50OY1_AiRbL4D7
 
 connections:
-  - web.enable=>FridgeController.state
-  - web.enable=>FermController.state
-  - Compressor.power=>web.compressorpower
-  - FridgeTemp.temperature=>web.fridgetemp
-  - FermTemp.temperature=>web.fermtemp
-  - Tilt.temperature=>web.tilttemp
-  - web.setpoint=>FermController.setpoint
-  - FermController.setpoint=>web.setpoint
-  - web.compressor=>Compressor.state
+  ## When /enable is called, forward the request to the controllers via notify,
+  ## then to the webpage with websocket.
+  - web.enable => HotWaterController.state
+  - web.enable => MashController.state
+
+  - MashController.power=>blynk.v2
+  - HotWaterController.power=>blynk.B
+  - blynk.v6=>MashController.power
+  - MashTemp.temperature=>blynk.v5
+  # IIUC, this is for the 
+  # - Compressor.power => web.compressorpower
+  # - FridgeTemp.temperature => web.fridgetemp
+  # - FermTemp.temperature => web.fermtemp
+  # - Tilt.temperature => web.tilttemp
+  # - web.setpoint => FermController.setpoint
+  # - FermController.setpoint => web.setpoint
+  # - web.compressor => Compressor.state
 

@@ -32,6 +32,7 @@ class SimpleWebView(interfaces.Component):
         self.endpointData[endpoint] = data
 
     async def handler(self, name, request):
+        ## On a request, notify first, then forward it to the webpage.
         stuff = await request.json()
         notify(Event(source=self.name, endpoint=name, data=stuff))
         return web.json_response(stuff)

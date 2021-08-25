@@ -38,6 +38,7 @@ for componentType in ['sensors', 'actors', 'extensions']:
             logging.info("setting up %s"%name)
             plugin = importlib.import_module('plugins.%s'%attribs['plugin'])
             components[name] = plugin.factory(name, attribs)
+
 for ctrl in config['controllers']:
     for name, attribs in ctrl.items():
         logger.info("setting up %s"%name)
@@ -50,9 +51,8 @@ for ctrl in config['controllers']:
         initiallyEnabled = True if attribs.get('initialState', 'on') == 'on' else 'off'
         components[name] = controller.Controller(name, sensor, actor, logic, agitator, initialSetpoint, initiallyEnabled)
 
-
 for conn in config['connections']:
-    (sendEvent, recvEvent) = conn.split('=>')
+    (sendEvent, recvEvent) = conn.replace(" ", "").split('=>')
     (sendComponent, sendType) = sendEvent.split('.')
     (recvComponent, recvType) = recvEvent.split('.')
     event.register(sendEvent, lambda event, rc=recvComponent, rt=recvType: components[rc].callback(rt, event))

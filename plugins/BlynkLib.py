@@ -296,5 +296,6 @@ class BlynkComponent(interfaces.Component):
 
     def callback(self, endpoint, data):
         pinNr = int(endpoint[1:])
+        logger.info ("writing pin %s with %s"%(pinNr, data))
         #print("%s : %s"%(type,event))
         self.blynk.virtual_write(pinNr, data)
