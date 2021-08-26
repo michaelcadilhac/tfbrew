@@ -1,3 +1,4 @@
+import logging
 from interfaces import Actor
 from event import notify, Event
 
@@ -8,8 +9,11 @@ def factory(name, settings):
     return GPIOActor(name, settings['gpio'], settings.get('pwmFrequency',2))
 
 
+logger = logging.getLogger(__name__)
+
 class GPIOActor(Actor):
     def __init__(self, name, pin, pwmFrequency):
+        logger.info ("Setting up GPIO pin %s as %s"%(pin, name))
         self.name = name
         self.power = 0.0
         self.pin = pin

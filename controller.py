@@ -45,6 +45,7 @@ class Controller(interfaces.Component, interfaces.Runnable):
         elif endpoint == 'automatic':
             self.actor.updatePower(0.0)
             self.automatic = bool(data)
+            event.notify(event.Event(source=self.name, endpoint='automatic', data=self.automatic))
             logger.info("Setting %s ctrl automatic to %r"%(self.name, bool(self._autoMode)))
         elif endpoint == 'setpoint':
             self.setSetpoint(float(data))

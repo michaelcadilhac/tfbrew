@@ -24,8 +24,8 @@ class TempAvgSensor(Sensor):
 
     async def run(self):
         while True:
-            self.lastTemp = await self.readTemp() 
             await asyncio.sleep(10)
+            self.lastTemp = await self.readTemp() 
 
     async def readTemp(self):
         tempsum = 0.0

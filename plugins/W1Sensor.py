@@ -38,7 +38,7 @@ class W1Sensor(Sensor):
         match = re.search('YES\n.*=(.*)$', contents)
         if match is None:
             raise RuntimeError("Failed to read W1 Temperature: %s"%contents)
-        return float(match.group(1)) / 1000
+        return (float(match.group(1)) / 1000) * 9/5 + 32
 
     def temp(self):
         return self.lastTemp

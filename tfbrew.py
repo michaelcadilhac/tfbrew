@@ -5,6 +5,7 @@ Backend for a yet another brewing application controlled by a Blynk frontend
 import sys, os
 import importlib
 import logging
+import RPi.GPIO as GPIO
 
 import asyncio
 from aiohttp import web
@@ -61,7 +62,8 @@ async def start_background_tasks(app):
     pass
 
 async def cleanup_background_tasks(app):
-    pass
+    logger.info ("cleaning up...")
+    GPIO.cleanup ()
 
 app.on_startup.append(start_background_tasks)
 app.on_cleanup.append(cleanup_background_tasks)
@@ -78,4 +80,8 @@ app.router.add_get('/', rootRouteHandler)
 if isWebUIenabled:
     app.router.add_static('/static', 'static/')
 
-web.run_app(app, port=config.get('port',8080))
+try:
+    web.run_app(app, port=config.get('port',8080))
+finally:
+    logger.info ("cleaning up...")
+    GPIO.cleanup ()

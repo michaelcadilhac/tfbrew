@@ -4,62 +4,50 @@ enableWebUI: true
 
 sensors:
   - HotWaterTemp:
-      plugin: DummySensor
-      fakeTemp: 65
-      aplugin: W1Sensor 
-      id: 28-0120223e13cf
-      offset: 0
-  - MashTemp1:
-      plugin: DummySensor
-      fakeTemp: 69
-      aplugin: W1Sensor
-      id: 28-0120223e13cf
-      offset: 0
-  - MashTemp2:
-      plugin: DummySensor
-      fakeTemp: 67
-      aplugin: W1Sensor
-      id: 28-0120223e13cf
-      offset: 0
+      plugin: W1Sensor 
+      id: 28-3c01d075a8df
+      offset: 1.26
+  - MashTunOutTemp:
+      plugin: W1Sensor
+      id: 28-3c01d075c6ff
+      offset: 0.18
+  - MashReturnTemp:
+      plugin: W1Sensor
+      id: 28-3c01d0754b11
+      offset: 0.45
   - MashTemp:
+      plugin: W1Sensor
+      id: 28-3c01d0758cdc
+      offset: 0
+  - MashAvgTemp:
       plugin: TempAvgSensor
       sensors:
-        - MashTemp1
-        - MashTemp2
+        - MashReturnTemp
+        - MashTunOutTemp
 
 actors:
-  - Pump:
-      plugin: DummyActor
-      aplugin: GPIOActor
-      gpio: 17
+  - Chugger:
+      plugin: GPIOActor
+      gpio: 14
+  - MKII:
+      plugin: GPIOActor
+      gpio: 15
   - Heater:
-      plugin: DummyActor
-      aplugin: GPIOActor
+      plugin: GPIOActor
       gpio: 18
 
 controllers:
   - HotWaterController:
       plugin: HysteresisLogic
       logicCoeffs:
-        allowedOvershoot: 0.5
-        allowedUndershoot: 0.3
+        allowedOvershoot: 1
+        allowedUndershoot: 0.8
         keepHot: yes
       actor:  Heater
       sensor: HotWaterTemp
-      initialSetpoint: 74
+      initialSetpoint: 150
       initialState: on
-      
-  - MashController:
-      plugin: HysteresisLogic
-      logicCoeffs:
-        allowedOvershoot: 0.5
-        allowedUndershoot: 0.3
-        keepHot: yes
-      actor:  Pump
-      sensor: MashTemp
-      initialSetpoint: 64
-      initialState: on
-      
+
 extensions:
    - web:
        plugin: SimpleWebView
@@ -69,20 +57,37 @@ extensions:
         - setmashpoint
    - blynk:
       plugin: BlynkLib
-      server: localhost
+      server: 192.168.105.117
       port: 8080
-      token: Ng4gnB2tPyuPlstsIQ50OY1_AiRbL4D7
+      token: 9wZEmLt-52nkpCzxp1ck2MiHcvcP6_S8
 
 connections:
-  ## When /enable is called, forward the request to the controllers via notify,
-  ## then to the webpage with websocket.
-  - web.enable => HotWaterController.state
-  - web.enable => MashController.state
-
-  - MashController.power=>blynk.v2
-  - HotWaterController.power=>blynk.B
-  - blynk.v6=>MashController.power
-  - MashTemp.temperature=>blynk.v5
+  ## Sensors
+  - HotWaterTemp.temperature => blynk.v1
+  - MashTunOutTemp.temperature => blynk.v2
+  - MashReturnTemp.temperature => blynk.v3
+  - MashTemp.temperature => blynk.v4
+  - MashAvgTemp.temperature => blynk.v12
+  ## Pumps
+  - blynk.v5 => MKII.state
+  - blynk.v6 => Chugger.state
+  - MKII.power => blynk.v14
+  - Chugger.power => blynk.v15
+  ## Heater
+  - Heater.power => blynk.v7
+  - blynk.v8 => HotWaterController.power
+  - HotWaterController.automatic => blynk.v13
+  - blynk.v9 => HotWaterController.automatic
+  - HotWaterController.setpoint => blynk.v10
+  - blynk.v11 => HotWaterController.setpoint
+  
+# - MashController.power=>blynk.v2
+  # - HotWaterController.power=>blynk.v4
+  # - blynk.v10=>MashController.power
+  # - MashTunOut.temperature=>blynk.v5
+  # - MashReturn.temperature=>blynk.v6
+  # - Mash.temperature=>blynk.v7
+  # - HotWaterTemp.temperature=>blynk.v8
   # IIUC, this is for the 
   # - Compressor.power => web.compressorpower
   # - FridgeTemp.temperature => web.fridgetemp
